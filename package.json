@@ -8,9 +8,15 @@
   "private": true,
   "packageManager": "yarn@4.4.0",
   "scripts": {
-    "start": "node index.js"
+    "start": "tsx index.ts"
   },
   "dependencies": {
     "koa": "^2.15.3"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.15.0",
+    "@types/node": "^22.2.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
   }
 }

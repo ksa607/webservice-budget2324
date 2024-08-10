@@ -1,8 +1,9 @@
-const Koa = require('koa');
+import Koa from 'koa';
+
 const app = new Koa();
 
 app.use(async (ctx) => {
-  ctx.body = 'Hello World';
+  ctx.body = 'Hello World from TypeScript';
 });
 
 app.listen(9000);
