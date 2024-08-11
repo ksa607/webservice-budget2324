@@ -8,7 +8,8 @@
   "private": true,
   "packageManager": "yarn@4.4.0",
   "scripts": {
-    "start": "tsx index.ts"
+    "start:dev": "tsx watch src/index.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "koa": "^2.15.3"
