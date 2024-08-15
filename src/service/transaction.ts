@@ -51,3 +51,7 @@ export const deleteById = (id: number) => {
   const index = TRANSACTIONS.findIndex((t) => t.id === id);
   TRANSACTIONS.splice(index, 1);
 };
+
+export const getTransactionsByPlaceId = async (placeId: number) => {
+  return TRANSACTIONS.filter((t) => t.place.id === placeId);
+};
