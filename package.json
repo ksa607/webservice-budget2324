@@ -13,6 +13,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@koa/cors": "^5.0.0",
     "@koa/router": "^12.0.1",
     "config": "^3.3.12",
     "koa": "^2.15.3",
@@ -25,6 +26,7 @@
     "@types/config": "^3.3.4",
     "@types/koa": "^2.15.0",
     "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa__cors": "^5.0.0",
     "@types/koa__router": "^12.0.4",
     "@types/node": "^22.2.0",
     "eslint": "^9.10.0",
