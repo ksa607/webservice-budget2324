@@ -1,57 +1,88 @@
-import { TRANSACTIONS, PLACES } from '../data/mock_data';
+import { prisma } from '../data';
+import * as placeService from './place';
 
-export const getAll = () => {
-  return TRANSACTIONS;
+const TRANSACTION_SELECT = {
+  id: true,
+  amount: true,
+  date: true,
+  place: true,
+  user: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+};
+
+export const getAll = async () => {
+  return prisma.transaction.findMany({
+    select: TRANSACTION_SELECT,
+  });
 };
 
 export const getById = (id: number) => {
-  return TRANSACTIONS.find((t) => t.id === id);
+  return prisma.transaction.findUnique({
+    where: {
+      id,
+    },
+    select: TRANSACTION_SELECT,
+  });
 };
 
-export const create = ({ amount, date, placeId, user }: any) => {
-  const existingPlace = PLACES.find((place) => place.id === placeId);
+export const create = async ({ amount, date, placeId, userId }: any) => {
+  const existingPlace = await placeService.getById(placeId);
 
   if (!existingPlace) {
     throw new Error(`There is no place with id ${placeId}.`);
   }
 
-  const maxId = Math.max(...TRANSACTIONS.map((i) => i.id));
-
-  const newTransaction = {
-    id: maxId + 1,
-    amount,
-    date: date.toISOString(),
-    place: existingPlace,
-    user: { id: Math.floor(Math.random() * 100000), name: user },
-  };
-  TRANSACTIONS.push(newTransaction);
-  return newTransaction;
+  return prisma.transaction.create({
+    data: {
+      amount,
+      date,
+      user_id: userId,
+      place_id: placeId,
+    },
+    select: TRANSACTION_SELECT,
+  });
 };
 
-export const updateById = (id: number, { amount, date, placeId, user }: any) => {
-  const index = TRANSACTIONS.findIndex((t) => t.id === id);
-  const existingPlace = PLACES.find((place) => place.id === placeId);
+export const updateById = async (id: number, { amount, date, placeId, userId }: any) => {
+  const existingPlace = await placeService.getById(placeId);
 
   if (!existingPlace) {
     throw new Error(`There is no place with id ${placeId}.`);
   }
 
-  const updatedTransaction = {
-    ...TRANSACTIONS[index],
-    amount,
-    date: date.toISOString(),
-    place: existingPlace,
-    user: { id: TRANSACTIONS[index].user.id, name: user },
-  };
-  TRANSACTIONS[index] = updatedTransaction;
-  return updatedTransaction;
+  return prisma.transaction.update({
+    where: {
+      id,
+      user_id: userId,
+    },
+    data: {
+      amount,
+      date,
+      place_id: placeId,
+    },
+    select: TRANSACTION_SELECT,
+  });
 };
 
-export const deleteById = (id: number) => {
-  const index = TRANSACTIONS.findIndex((t) => t.id === id);
-  TRANSACTIONS.splice(index, 1);
+export const deleteById = async (id: number) => {
+  await prisma.transaction.delete({
+    where: {
+      id,
+    },
+  });
 };
 
 export const getTransactionsByPlaceId = async (placeId: number) => {
-  return TRANSACTIONS.filter((t) => t.place.id === placeId);
+  return prisma.transaction.findMany({
+    where: {
+      AND: [
+        { place_id: placeId },
+      ],
+    },
+    select: TRANSACTION_SELECT,
+  });
 };

@@ -4,35 +4,35 @@ import * as transactionService from '../service/transaction';
 import type { Context } from 'koa';
 
 const getAllPlaces = async (ctx: Context) => {
-  const places = placeService.getAll();
+  const places = await placeService.getAll();
   ctx.body = {
     items: places,
   };
 };
 
 const getPlaceById = async (ctx: Context) => {
-  const place = placeService.getById(Number(ctx.params.id));
+  const place = await placeService.getById(Number(ctx.params.id));
   ctx.body = place;
 };
 
 const createPlace = async (ctx: Context) => {
-  const place = placeService.create(ctx.request.body!);
+  const place = await placeService.create(ctx.request.body!);
   ctx.status = 201;
   ctx.body = place;
 };
 
 const updatePlace = async (ctx: Context) => {
-  const place = placeService.updateById(Number(ctx.params.id), ctx.request.body!);
+  const place = await placeService.updateById(Number(ctx.params.id), ctx.request.body!);
   ctx.body = place;
 };
 
 const deletePlace = async (ctx: Context) => {
-  placeService.deleteById(Number(ctx.params.id));
+  await placeService.deleteById(Number(ctx.params.id));
   ctx.status = 204;
 };
 
 const getTransactionsByPlaceId = async (ctx: Context) => {
-  const transactions = transactionService.getTransactionsByPlaceId(Number(ctx.params.id));
+  const transactions = await transactionService.getTransactionsByPlaceId(Number(ctx.params.id));
   ctx.body = {
     items: transactions,
   };

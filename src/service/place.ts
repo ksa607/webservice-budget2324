@@ -1,37 +1,42 @@
-import { PLACES } from '../data/mock_data';
+import { prisma } from '../data';
 
-export const getAll = () => {
-  return PLACES;
+export const getAll = async () => {
+  return prisma.place.findMany();
 };
 
-export const getById = (id: number) => {
-  return PLACES.find((t) => t.id === id);
+export const getById = async (id: number) => {
+  return prisma.place.findUnique({
+    where: {
+      id,
+    },
+  });
 };
 
-export const create = ({ name, rating }: any) => {
-  const maxId = Math.max(...PLACES.map((i) => i.id));
-
-  const newPlace = {
-    id: maxId + 1,
-    name,
-    rating,
-  };
-  PLACES.push(newPlace);
-  return newPlace;
+export const create = async ({ name, rating }: any) => {
+  return prisma.place.create({
+    data: {
+      name,
+      rating,
+    },
+  });
 };
 
-export const updateById = (id: number, { name, rating }: any) => {
-  const index = PLACES.findIndex((t) => t.id === id);
-  const updatedPlace = {
-    ...PLACES[index],
-    name,
-    rating,
-  };
-  PLACES[index] = updatedPlace;
-  return updatedPlace;
+export const updateById = async (id: number, { name, rating }: any) => {
+  return prisma.place.update({
+    where: {
+      id,
+    },
+    data: {
+      name,
+      rating,
+    },
+  });
 };
 
-export const deleteById = (id: number) => {
-  const index = PLACES.findIndex((t) => t.id === id);
-  PLACES.splice(index, 1);
+export const deleteById = async (id: number) => {
+  await prisma.place.delete({
+    where: {
+      id,
+    },
+  });
 };
