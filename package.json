@@ -13,7 +13,8 @@
     "lint": "eslint ."
   },
   "prisma": {
-    "schema": "src/data/schema.prisma"
+    "schema": "src/data/schema.prisma",
+    "seed": "tsx ./src/data/seed.ts"
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
