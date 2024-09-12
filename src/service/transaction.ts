@@ -1,4 +1,5 @@
 import { prisma } from '../data';
+import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from '../types/transaction';
 import * as placeService from './place';
 
 const TRANSACTION_SELECT = {
@@ -14,13 +15,13 @@ const TRANSACTION_SELECT = {
   },
 };
 
-export const getAll = async () => {
+export const getAll = async (): Promise<Transaction[]> => {
   return prisma.transaction.findMany({
     select: TRANSACTION_SELECT,
   });
 };
 
-export const getById = (id: number) => {
+export const getById = (id: number): Promise<Transaction | null> => {
   return prisma.transaction.findUnique({
     where: {
       id,
@@ -29,7 +30,12 @@ export const getById = (id: number) => {
   });
 };
 
-export const create = async ({ amount, date, placeId, userId }: any) => {
+export const create = async ({
+  amount,
+  date,
+  placeId,
+  userId,
+}: TransactionCreateInput): Promise<Transaction> => {
   const existingPlace = await placeService.getById(placeId);
 
   if (!existingPlace) {
@@ -47,7 +53,12 @@ export const create = async ({ amount, date, placeId, userId }: any) => {
   });
 };
 
-export const updateById = async (id: number, { amount, date, placeId, userId }: any) => {
+export const updateById = async (id: number, {
+  amount,
+  date,
+  placeId,
+  userId,
+}: TransactionUpdateInput): Promise<Transaction> => {
   const existingPlace = await placeService.getById(placeId);
 
   if (!existingPlace) {
@@ -68,7 +79,7 @@ export const updateById = async (id: number, { amount, date, placeId, userId }: 
   });
 };
 
-export const deleteById = async (id: number) => {
+export const deleteById = async (id: number): Promise<void> => {
   await prisma.transaction.delete({
     where: {
       id,
@@ -76,7 +87,7 @@ export const deleteById = async (id: number) => {
   });
 };
 
-export const getTransactionsByPlaceId = async (placeId: number) => {
+export const getTransactionsByPlaceId = async (placeId: number): Promise<Transaction[]> => {
   return prisma.transaction.findMany({
     where: {
       AND: [
