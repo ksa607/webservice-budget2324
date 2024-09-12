@@ -1,4 +1,4 @@
-import type { Entity } from './common';
+import type { Entity, ListResponse } from './common';
 import type { Place } from './place';
 import type { User } from './user';
 
@@ -17,3 +17,11 @@ export interface TransactionCreateInput {
 }
 
 export interface TransactionUpdateInput extends TransactionCreateInput {}
+
+export interface CreateTransactionRequest extends TransactionCreateInput {}
+export interface UpdateTransactionRequest extends TransactionUpdateInput {}
+
+export interface GetAllTransactionsReponse extends ListResponse<Transaction> {}
+export interface GetTransactionByIdResponse extends Transaction {}
+export interface CreateTransactionResponse extends GetTransactionByIdResponse {}
+export interface UpdateTransactionResponse extends GetTransactionByIdResponse {}

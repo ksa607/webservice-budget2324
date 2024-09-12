@@ -1,4 +1,4 @@
-import type { Entity } from './common';
+import type { Entity, ListResponse } from './common';
 
 export interface Place extends Entity {
   name: string;
@@ -11,3 +11,11 @@ export interface PlaceCreateInput {
 }
 
 export interface PlaceUpdateInput extends PlaceCreateInput {}
+
+export interface CreatePlaceRequest extends PlaceCreateInput {}
+export interface UpdatePlaceRequest extends PlaceUpdateInput {}
+
+export interface GetAllPlacesResponse extends ListResponse<Place> {}
+export interface GetPlaceByIdResponse extends Place {}
+export interface CreatePlaceResponse extends GetPlaceByIdResponse {}
+export interface UpdatePlaceResponse extends GetPlaceByIdResponse {}

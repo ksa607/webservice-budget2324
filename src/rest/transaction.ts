@@ -1,14 +1,24 @@
 import Router from '@koa/router';
 import * as transactionService from '../service/transaction';
-import type { Context } from 'koa';
+import type { BudgetAppContext, BudgetAppState} from '../types/koa';
+import type { KoaContext, KoaRouter } from '../types/koa';
+import type {
+  CreateTransactionRequest,
+  CreateTransactionResponse,
+  GetAllTransactionsReponse,
+  GetTransactionByIdResponse,
+  UpdateTransactionRequest,
+  UpdateTransactionResponse,
+} from '../types/transaction';
+import type { IdParams } from '../types/common';
 
-const getAllTransactions = async (ctx: Context) => {
+const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
     items: await transactionService.getAll(),
   };
 };
 
-const createTransaction = async (ctx: Context) => {
+const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void, CreateTransactionRequest>) => {
   const newTransaction = await transactionService.create({
     ...ctx.request.body,
     placeId: Number(ctx.request.body.placeId),
@@ -18,11 +28,11 @@ const createTransaction = async (ctx: Context) => {
   ctx.body = newTransaction;
 };
 
-const getTransactionById = async (ctx: Context) => {
+const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
   ctx.body = await transactionService.getById(Number(ctx.params.id));
 };
 
-const updateTransaction = async (ctx: Context) => {
+const updateTransaction = async (ctx: KoaContext<UpdateTransactionResponse, IdParams, UpdateTransactionRequest>) => {
   ctx.body = await transactionService.updateById(Number(ctx.params.id), {
     ...ctx.request.body,
     placeId: Number(ctx.request.body.placeId),
@@ -31,13 +41,13 @@ const updateTransaction = async (ctx: Context) => {
   });
 };
 
-const deleteTransaction = async (ctx: Context) => {
+const deleteTransaction = async (ctx: KoaContext<void, IdParams>) => {
   await transactionService.deleteById(Number(ctx.params.id));
   ctx.status = 204;
 };
 
-export default (parent: Router) => {
-  const router = new Router({
+export default (parent: KoaRouter) => {
+  const router = new Router<BudgetAppState, BudgetAppContext>({
     prefix: '/transactions',
   });
 
