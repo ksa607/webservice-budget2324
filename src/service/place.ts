@@ -5,11 +5,22 @@ export const getAll = async (): Promise<Place[]> => {
   return prisma.place.findMany();
 };
 
+
 export const getById = async (id: number): Promise<Place | null> => {
   return prisma.place.findUnique({
     where: {
       id,
-    },
+    }, include: {
+      transactions: {
+        select: {
+          id: true,
+          amount: true,
+          date: true,
+          place: true,
+          user: true
+        }
+      }
+    }
   });
 };
 
