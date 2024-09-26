@@ -15,7 +15,7 @@ export type KoaContext<
   ParameterizedContext<BudgetAppState, BudgetAppContext, ResponseBody>
   & {
     request: {
-      body?: RequestBody;
+      body: RequestBody;
       query: Query;
     };
     params: Params;

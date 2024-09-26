@@ -27,13 +27,13 @@ const getPlaceById = async (ctx: KoaContext<GetPlaceByIdResponse, IdParams>) => 
 };
 
 const createPlace = async (ctx: KoaContext<CreatePlaceResponse, void, CreatePlaceRequest>) => {
-  const place = await placeService.create(ctx.request.body!);
+  const place = await placeService.create(ctx.request.body);
   ctx.status = 201;
   ctx.body = place;
 };
 
 const updatePlace = async (ctx: KoaContext<UpdatePlaceResponse, IdParams, UpdatePlaceRequest>) => {
-  const place = await placeService.updateById(Number(ctx.params.id), ctx.request.body!);
+  const place = await placeService.updateById(Number(ctx.params.id), ctx.request.body);
   ctx.body = place;
 };
 
