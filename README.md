@@ -38,6 +38,16 @@ DATABASE_URL=mysql://root:root@localhost:3306/budget
 - Make sure Corepack is enabled: `corepack enable`
 - Install all dependencies: `yarn`
 - Make sure a `.env` exists (see above)
-- Migrate the database: `yarn prisma migrate dev`
+- Run the migrations: `yarn migrate:dev`
 - Seed the database: `yarn prisma db seed`
 - Start the development server: `yarn start:dev`
+
+## Test this project
+
+- Enable Corepack: `corepack enable`
+- Install all dependencies: `yarn`
+- Make sure `.env.test` exists (see above)
+- Run the migrations: `yarn migrate:test`
+- Run the tests: `yarn test`
+  - This will start a new server for each test suite that runs, you won't see any output as logging is disabled to make output more clean. The logs are saved in the `test.log` file.
+  - If you want to get the coverage report, run `yarn test:coverage`.
