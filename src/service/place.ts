@@ -6,8 +6,8 @@ export const getAll = async (): Promise<Place[]> => {
 };
 
 
-export const getById = async (id: number): Promise<Place | null> => {
-  return prisma.place.findUnique({
+export const getById = async (id: number): Promise<Place> => {
+  const place = await prisma.place.findUnique({
     where: {
       id,
     }, include: {
@@ -22,6 +22,12 @@ export const getById = async (id: number): Promise<Place | null> => {
       }
     }
   });
+
+  if (!place) {
+    throw new Error('No place with this id exists');
+  }
+
+  return place;
 };
 
 export const create = async (place: PlaceCreateInput): Promise<Place> => {

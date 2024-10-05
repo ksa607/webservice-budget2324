@@ -5,8 +5,14 @@ export const getAll = async (): Promise<User[]> => {
   return prisma.user.findMany();
 };
 
-export const getById = async (id: number): Promise<User | null> => {
-  return prisma.user.findUnique({ where: { id } });
+export const getById = async (id: number): Promise<User> => {
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    throw new Error('No user with this id exists');
+  }
+
+  return user;
 };
 
 export const create = async ({ name }: UserCreateInput): Promise<User> => {

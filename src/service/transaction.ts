@@ -21,13 +21,19 @@ export const getAll = async (): Promise<Transaction[]> => {
   });
 };
 
-export const getById = (id: number): Promise<Transaction | null> => {
-  return prisma.transaction.findUnique({
+export const getById = async (id: number): Promise<Transaction> => {
+  const transaction = await prisma.transaction.findUnique({
     where: {
       id,
     },
     select: TRANSACTION_SELECT,
   });
+
+  if (!transaction) {
+    throw new Error('No transaction with this id exists');
+  }
+
+  return transaction;
 };
 
 export const create = async ({
