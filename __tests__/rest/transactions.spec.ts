@@ -259,4 +259,30 @@ describe('Transactions', () => {
       });
     });
   });
+
+  describe('DELETE /api/transactions/:id', () => {
+
+    beforeAll(async () => {
+      await prisma.place.createMany({ data: data.places });
+      await prisma.user.createMany({ data: data.users });
+      await prisma.transaction.create({ data: data.transactions[0]! });
+    });
+
+    afterAll(async () => {
+      await prisma.place.deleteMany({
+        where: { id: { in: dataToDelete.places } },
+      });
+
+      await prisma.user.deleteMany({
+        where: { id: { in: dataToDelete.users } },
+      });
+    });
+
+    it('should 204 and return nothing', async () => {
+      const response = await request.delete(`${url}/1`);
+
+      expect(response.statusCode).toBe(204);
+      expect(response.body).toEqual({});
+    });
+  });
 });
