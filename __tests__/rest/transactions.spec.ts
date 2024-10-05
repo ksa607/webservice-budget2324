@@ -164,4 +164,52 @@ describe('Transactions', () => {
       });
     });
   });
+
+  describe('POST /api/transactions', () => {
+    const transactionsToDelete: number[] = [];
+
+    beforeAll(async () => {
+      await prisma.place.createMany({ data: data.places });
+      await prisma.user.createMany({ data: data.users });
+    });
+
+    afterAll(async () => {
+      await prisma.transaction.deleteMany({
+        where: { id: { in: transactionsToDelete } },
+      });
+
+      await prisma.place.deleteMany({
+        where: { id: { in: dataToDelete.places } },
+      });
+
+      await prisma.user.deleteMany({
+        where: { id: { in: dataToDelete.users } },
+      });
+    });
+
+    it('should 201 and return the created transaction', async () => {
+      const response = await request.post(url).send({
+        amount: 102,
+        date: '2021-05-27T13:00:00.000Z',
+        placeId: 1,
+        userId: 1,
+      });
+    
+      expect(response.status).toBe(201);
+      expect(response.body.id).toBeTruthy();
+      expect(response.body.amount).toBe(102);
+      expect(response.body.date).toBe('2021-05-27T13:00:00.000Z');
+      expect(response.body.place).toEqual({
+        id: 1,
+        name: 'Test place',
+        rating: 3,
+      });
+      expect(response.body.user).toEqual({
+        id: 1,
+        name: 'Test User',
+      });
+    
+      transactionsToDelete.push(response.body.id);
+    });
+  });
 });

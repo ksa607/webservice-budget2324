@@ -25,6 +25,7 @@ const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void
     userId: Number(ctx.request.body.userId),
     date: new Date(ctx.request.body.date),
   });
+  ctx.status = 201;
   ctx.body = newTransaction;
 };
 
