@@ -1,19 +1,21 @@
-import Koa from 'koa';
-import { getLogger } from './core/logging';
-import installRest from './rest';
-import { initializeData } from './data';
-import installMiddlewares from './core/installMiddlewares';
-import type { BudgetAppContext, BudgetAppState } from './types/koa';
+import createServer from './createServer';
 
-async function main(): Promise<void> {
-  const app = new Koa<BudgetAppState, BudgetAppContext>();
+async function main() {
+  try {
+    const server = await createServer();
+    await server.start();
 
-  installMiddlewares(app);
-  await initializeData();
-  installRest(app);
+    async function onClose() {
+      await server.stop();
+      process.exit(0);
+    }
 
-  app.listen(9000, () => {
-    getLogger().info('🚀 Server listening on http://127.0.0.1:9000');
-  });
+    process.on('SIGTERM', onClose);
+    process.on('SIGQUIT', onClose);
+  } catch (error) {
+    console.log('\n', error);
+    process.exit(-1);
+  }
 }
+
 main();
