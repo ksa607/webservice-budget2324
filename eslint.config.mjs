@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint'
 import stylistic from '@stylistic/eslint-plugin';
+import jest from 'eslint-plugin-jest';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -31,5 +32,9 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
     },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    plugins: { jest },
   },
 );
