@@ -212,4 +212,51 @@ describe('Transactions', () => {
       transactionsToDelete.push(response.body.id);
     });
   });
+
+  describe('PUT /api/transactions/:id', () => {
+
+    beforeAll(async () => {
+      await prisma.place.createMany({ data: data.places });
+      await prisma.user.createMany({ data: data.users });
+      await prisma.transaction.createMany({ data: data.transactions });
+    });
+
+    afterAll(async () => {
+      await prisma.transaction.deleteMany({
+        where: { id: { in: dataToDelete.transactions } },
+      })
+
+      await prisma.place.deleteMany({
+        where: { id: { in: dataToDelete.places } },
+      });
+
+      await prisma.user.deleteMany({
+        where: { id: { in: dataToDelete.users } },
+      });
+    });
+
+    it('should 200 and return the updated transaction', async () => {
+      const response = await request.put(`${url}/1`)
+        .send({
+          amount: -125,
+          date: '2021-05-27T13:00:00.000Z',
+          placeId: 1,
+          userId: 1,
+        });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.id).toEqual(1);
+      expect(response.body.amount).toBe(-125);
+      expect(response.body.date).toBe('2021-05-27T13:00:00.000Z');
+      expect(response.body.place).toEqual({
+        id: 1,
+        name: 'Test place',
+        rating: 3,
+      });
+      expect(response.body.user).toEqual({
+        id: 1,
+        name: 'Test User',
+      });
+    });
+  });
 });
