@@ -31,7 +31,7 @@ async function main(): Promise<void> {
 
   app.use(bodyParser());
 
-  initializeData();
+  await initializeData();
   installRest(app);
 
   app.listen(9000, () => {
