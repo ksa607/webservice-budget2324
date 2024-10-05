@@ -120,4 +120,48 @@ describe('Transactions', () => {
       );
     });
   });
+
+  describe('GET /api/transactions/:id', () => {
+
+    const url = '/api/transactions';
+
+    beforeAll(async () => {
+      await prisma.place.createMany({ data: data.places });
+      await prisma.user.createMany({ data: data.users });
+      await prisma.transaction.createMany({ data: data.transactions });
+    });
+
+    afterAll(async () => {
+      await prisma.transaction.deleteMany({
+        where: { id: { in: dataToDelete.transactions } },
+      });
+      await prisma.place.deleteMany({
+        where: { id: { in: dataToDelete.places } },
+      });
+      await prisma.user.deleteMany({
+        where: { id: { in: dataToDelete.users } },
+      });
+    });
+
+    it('should 200 and return the requested transaction', async () => {
+      const response = await request.get(`${url}/1`);
+
+      expect(response.statusCode).toBe(200);
+
+      expect(response.body).toEqual({
+        id: 1,
+        user: {
+          id: 1,
+          name: 'Test User',
+        },
+        place: {
+          id: 1,
+          name: 'Test place',
+          rating: 3,
+        },
+        amount: 3500,
+        date: new Date(2021, 4, 25, 19, 40).toJSON(),
+      });
+    });
+  });
 });
