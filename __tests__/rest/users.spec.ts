@@ -63,6 +63,14 @@ describe('Users', () => {
         name: 'User Three',
       }]));
     });
+
+    it('should 400 when given an argument', async () => {
+      const response = await request.get(`${url}?invalid=true`);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.code).toBe('VALIDATION_FAILED');
+      expect(response.body.details.query).toHaveProperty('invalid');
+    });
   });
 
   describe('GET /api/user/:id', () => {
@@ -83,6 +91,25 @@ describe('Users', () => {
         id: 1,
         name: 'User One',
       });
+    });
+
+    it('should 404 with not existing user', async () => {
+      const response = await request.get(`${url}/123`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'No user with this id exists',
+      });
+      expect(response.body.stack).toBeTruthy();
+    });
+
+    it('should 400 with invalid user id', async () => {
+      const response = await request.get(`${url}/invalid`);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.code).toBe('VALIDATION_FAILED');
+      expect(response.body.details.params).toHaveProperty('id');
     });
   });
 
@@ -148,6 +175,17 @@ describe('Users', () => {
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toEqual({});
+    });
+
+    it('should 404 with not existing user', async () => {
+      const response = await request.delete(`${url}/123`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'No user with this id exists',
+      });
+      expect(response.body.stack).toBeTruthy();
     });
   });
 });
