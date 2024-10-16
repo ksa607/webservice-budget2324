@@ -175,7 +175,7 @@ describe('Places', () => {
   describe('DELETE /api/places/:id', () => {
 
     beforeAll(async () => {
-      await prisma.place.create({ data: data.places[0]! })
+      await prisma.place.create({ data: data.places[0]! });
     });
 
     it('should 204 and return nothing', async () => {

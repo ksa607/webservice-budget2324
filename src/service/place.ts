@@ -5,7 +5,6 @@ export const getAll = async (): Promise<Place[]> => {
   return prisma.place.findMany();
 };
 
-
 export const getById = async (id: number): Promise<Place> => {
   const place = await prisma.place.findUnique({
     where: {
@@ -17,10 +16,10 @@ export const getById = async (id: number): Promise<Place> => {
           amount: true,
           date: true,
           place: true,
-          user: true
-        }
-      }
-    }
+          user: true,
+        },
+      },
+    },
   });
 
   if (!place) {

@@ -16,7 +16,7 @@ const data = {
     {
       id: 3,
       name: 'User Three',
-    }
+    },
   ],
 };
 
@@ -138,7 +138,6 @@ describe('Users', () => {
   });
 
   describe('DELETE /api/users/:id', () => {
-
 
     beforeAll(async () => {
       await prisma.user.create({ data: data.users[0]! });

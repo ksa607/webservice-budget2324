@@ -224,7 +224,7 @@ describe('Transactions', () => {
     afterAll(async () => {
       await prisma.transaction.deleteMany({
         where: { id: { in: dataToDelete.transactions } },
-      })
+      });
 
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
