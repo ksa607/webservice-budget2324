@@ -3,22 +3,25 @@ import * as healthService from '../service/health';
 import type { BudgetAppContext, BudgetAppState} from '../types/koa';
 import type { KoaContext, KoaRouter } from '../types/koa';
 import type { PingResponse, VersionResponse } from '../types/health';
+import validate from '../core/validation';
 
 const ping = async (ctx: KoaContext<PingResponse>) => {
   ctx.status = 200;
   ctx.body = healthService.ping();
 };
+ping.validationScheme = null;
 
 const getVersion = async (ctx: KoaContext<VersionResponse>) => {
   ctx.status = 200;
   ctx.body = healthService.getVersion();
 };
+getVersion.validationScheme = null;
 
 export default function installPlacesRoutes(parent: KoaRouter) {
   const router = new Router<BudgetAppState, BudgetAppContext>({ prefix: '/health' });
 
-  router.get('/ping', ping);
-  router.get('/version', getVersion);
+  router.get('/ping', validate(ping.validationScheme), ping);
+  router.get('/version', validate(getVersion.validationScheme), getVersion);
 
   parent
     .use(router.routes())
