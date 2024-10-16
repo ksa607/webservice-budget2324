@@ -1,6 +1,8 @@
 import { prisma } from '../data';
 import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from '../types/transaction';
 import * as placeService from './place';
+import ServiceError from '../core/serviceError';
+import handleDBError from './_handleDBError';
 
 const TRANSACTION_SELECT = {
   id: true,
@@ -30,7 +32,7 @@ export const getById = async (id: number): Promise<Transaction> => {
   });
 
   if (!transaction) {
-    throw new Error('No transaction with this id exists');
+    throw ServiceError.notFound('No transaction with this id exists');
   }
 
   return transaction;
@@ -42,21 +44,21 @@ export const create = async ({
   placeId,
   userId,
 }: TransactionCreateInput): Promise<Transaction> => {
-  const existingPlace = await placeService.getById(placeId);
+  try {
+    await placeService.checkPlaceExists(placeId);
 
-  if (!existingPlace) {
-    throw new Error(`There is no place with id ${placeId}.`);
+    return await prisma.transaction.create({
+      data: {
+        amount,
+        date,
+        user_id: userId,
+        place_id: placeId,
+      },
+      select: TRANSACTION_SELECT,
+    });
+  } catch (error) {
+    throw handleDBError(error);
   }
-
-  return prisma.transaction.create({
-    data: {
-      amount,
-      date,
-      user_id: userId,
-      place_id: placeId,
-    },
-    select: TRANSACTION_SELECT,
-  });
 };
 
 export const updateById = async (id: number, {

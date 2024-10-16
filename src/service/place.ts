@@ -51,3 +51,15 @@ export const deleteById = async (id: number) => {
     },
   });
 };
+
+export const checkPlaceExists = async (id: number) => {
+  const count = await prisma.place.count({
+    where: {
+      id,
+    },
+  });
+
+  if (count === 0) {
+    throw new Error('No place with this id exists');
+  }
+};
