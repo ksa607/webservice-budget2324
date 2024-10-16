@@ -1,4 +1,5 @@
 import Router from '@koa/router';
+import Joi from 'joi';
 import * as transactionService from '../service/transaction';
 import type { BudgetAppContext, BudgetAppState} from '../types/koa';
 import type { KoaContext, KoaRouter } from '../types/koa';
@@ -11,6 +12,7 @@ import type {
   UpdateTransactionResponse,
 } from '../types/transaction';
 import type { IdParams } from '../types/common';
+import validate from '../core/validation';
 
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
@@ -30,7 +32,12 @@ const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void
 };
 
 const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
-  ctx.body = await transactionService.getById(Number(ctx.params.id));
+  ctx.body = await transactionService.getById(ctx.params.id);
+};
+getTransactionById.validationScheme = {
+  params: {
+    id: Joi.number().integer().positive(),
+  },
 };
 
 const updateTransaction = async (ctx: KoaContext<UpdateTransactionResponse, IdParams, UpdateTransactionRequest>) => {
@@ -54,7 +61,7 @@ export default (parent: KoaRouter) => {
 
   router.get('/', getAllTransactions);
   router.post('/', createTransaction);
-  router.get('/:id', getTransactionById);
+  router.get('/:id', validate(getTransactionById.validationScheme), getTransactionById);
   router.put('/:id', updateTransaction);
   router.delete('/:id', deleteTransaction);
 
