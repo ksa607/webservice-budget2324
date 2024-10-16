@@ -6,6 +6,7 @@ import jest from 'eslint-plugin-jest';
 export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  { ignores: ['build'] },
   {
     files: ['**/*.ts', '**/*.spec.ts'],
     plugins: {
@@ -16,7 +17,6 @@ export default tseslint.config(
         max: 1, maxEOF: 1, maxBOF: 0,
       }],
       '@stylistic/indent': ['error', 2, { 'SwitchCase': 1 }],
-      '@stylistic/linebreak-style': ['error', ''],
       '@stylistic/quotes': ['error', 'single'],
       '@stylistic/semi': ['error', 'always'],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
