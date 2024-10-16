@@ -66,6 +66,17 @@ const validate = (scheme: RequestValidationSchemeInput | null) => {
       ctx.request.body = bodyValue;
     }
 
+    const { error: queryErrors, value: queryValue } = parsedSchema.query.validate(
+      ctx.query,
+      JOI_OPTIONS,
+    );
+    
+    if (queryErrors) {
+      errors.set('query', cleanupJoiError(queryErrors));
+    } else {
+      ctx.query = queryValue;
+    }
+
     if (errors.size > 0) {
       ctx.throw(400, 'Validation failed, check details for more information', {
         code: 'VALIDATION_FAILED',

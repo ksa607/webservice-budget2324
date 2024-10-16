@@ -19,6 +19,7 @@ const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) =>
     items: await transactionService.getAll(),
   };
 };
+getAllTransactions.validationScheme = null;
 
 const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void, CreateTransactionRequest>) => {
   const newTransaction = await transactionService.create(ctx.request.body);
@@ -62,7 +63,7 @@ export default (parent: KoaRouter) => {
     prefix: '/transactions',
   });
 
-  router.get('/', getAllTransactions);
+  router.get('/', validate(getAllTransactions.validationScheme), getAllTransactions);
   router.post('/', validate(createTransaction.validationScheme), createTransaction);
   router.get('/:id', validate(getTransactionById.validationScheme), getTransactionById);
   router.put('/:id', updateTransaction);
