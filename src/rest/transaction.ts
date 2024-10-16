@@ -21,14 +21,17 @@ const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) =>
 };
 
 const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void, CreateTransactionRequest>) => {
-  const newTransaction = await transactionService.create({
-    ...ctx.request.body,
-    placeId: Number(ctx.request.body.placeId),
-    userId: Number(ctx.request.body.userId),
-    date: new Date(ctx.request.body.date),
-  });
+  const newTransaction = await transactionService.create(ctx.request.body);
   ctx.status = 201;
   ctx.body = newTransaction;
+};
+createTransaction.validationScheme = {
+  body: {
+    amount: Joi.number().invalid(0),
+    date: Joi.date().iso().less('now'),
+    placeId: Joi.number().integer().positive(),
+    userId: Joi.number().integer().positive(),
+  },
 };
 
 const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
@@ -60,7 +63,7 @@ export default (parent: KoaRouter) => {
   });
 
   router.get('/', getAllTransactions);
-  router.post('/', createTransaction);
+  router.post('/', validate(createTransaction.validationScheme), createTransaction);
   router.get('/:id', validate(getTransactionById.validationScheme), getTransactionById);
   router.put('/:id', updateTransaction);
   router.delete('/:id', deleteTransaction);
