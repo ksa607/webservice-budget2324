@@ -1,6 +1,7 @@
 import config from 'config';
 import bodyParser from 'koa-bodyparser';
 import koaCors from '@koa/cors';
+import koaHelmet from 'koa-helmet';
 import type { KoaApplication } from '../types/koa';
 import { getLogger } from './logging';
 import ServiceError from './serviceError';
@@ -45,6 +46,7 @@ export default function installMiddlewares(app: KoaApplication) {
   });
 
   app.use(bodyParser());
+  app.use(koaHelmet());
 
   app.use(async (ctx, next) => {
     try {
