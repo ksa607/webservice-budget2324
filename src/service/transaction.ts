@@ -1,8 +1,8 @@
 import { prisma } from '../data';
 import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from '../types/transaction';
-import * as placeService from './place';
 import ServiceError from '../core/serviceError';
 import handleDBError from './_handleDBError';
+import * as placeService from './place';
 
 const TRANSACTION_SELECT = {
   id: true,
@@ -67,32 +67,36 @@ export const updateById = async (id: number, {
   placeId,
   userId,
 }: TransactionUpdateInput): Promise<Transaction> => {
-  const existingPlace = await placeService.getById(placeId);
+  try {
+    await placeService.checkPlaceExists(placeId);
 
-  if (!existingPlace) {
-    throw new Error(`There is no place with id ${placeId}.`);
+    return await prisma.transaction.update({
+      where: {
+        id,
+        user_id: userId,
+      },
+      data: {
+        amount,
+        date,
+        place_id: placeId,
+      },
+      select: TRANSACTION_SELECT,
+    });
+  } catch (error) {
+    throw handleDBError(error);
   }
-
-  return prisma.transaction.update({
-    where: {
-      id,
-      user_id: userId,
-    },
-    data: {
-      amount,
-      date,
-      place_id: placeId,
-    },
-    select: TRANSACTION_SELECT,
-  });
 };
 
 export const deleteById = async (id: number): Promise<void> => {
-  await prisma.transaction.delete({
-    where: {
-      id,
-    },
-  });
+  try {
+    await prisma.transaction.delete({
+      where: {
+        id,
+      },
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const getTransactionsByPlaceId = async (placeId: number): Promise<Transaction[]> => {

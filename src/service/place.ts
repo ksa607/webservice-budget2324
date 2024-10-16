@@ -1,5 +1,7 @@
+import ServiceError from '../core/serviceError';
 import { prisma } from '../data';
 import type { Place, PlaceCreateInput, PlaceUpdateInput } from '../types/place';
+import handleDBError from './_handleDBError';
 
 export const getAll = async (): Promise<Place[]> => {
   return prisma.place.findMany();
@@ -23,33 +25,45 @@ export const getById = async (id: number): Promise<Place> => {
   });
 
   if (!place) {
-    throw new Error('No place with this id exists');
+    throw ServiceError.notFound('No place with this id exists');
   }
 
   return place;
 };
 
 export const create = async (place: PlaceCreateInput): Promise<Place> => {
-  return prisma.place.create({
-    data: place,
-  });
+  try {
+    return await prisma.place.create({
+      data: place,
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const updateById = async (id: number, changes: PlaceUpdateInput): Promise<Place> => {
-  return prisma.place.update({
-    where: {
-      id,
-    },
-    data: changes,
-  });
+  try {
+    return await prisma.place.update({
+      where: {
+        id,
+      },
+      data: changes,
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const deleteById = async (id: number) => {
-  await prisma.place.delete({
-    where: {
-      id,
-    },
-  });
+  try {
+    await prisma.place.delete({
+      where: {
+        id,
+      },
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const checkPlaceExists = async (id: number) => {
@@ -60,6 +74,6 @@ export const checkPlaceExists = async (id: number) => {
   });
 
   if (count === 0) {
-    throw new Error('No place with this id exists');
+    throw ServiceError.notFound('No place with this id exists');
   }
 };
