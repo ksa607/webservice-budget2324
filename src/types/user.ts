@@ -1,7 +1,11 @@
+import type { Prisma } from '@prisma/client';
 import type { Entity, ListResponse } from './common';
 
 export interface User extends Entity {
   name: string;
+  email: string;
+  password_hash: string;
+  roles: Prisma.JsonValue;
 }
 
 export interface UserCreateInput {
