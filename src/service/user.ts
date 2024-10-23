@@ -37,6 +37,29 @@ export const login = async (
   return await generateJWT(user);
 };
 
+export const register = async ({
+  name,
+  email,
+  password,
+}: UserCreateInput): Promise<string> => {
+  try {
+    const passwordHash = await hashPassword(password);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password_hash: passwordHash,
+        roles: [Role.USER],
+      },
+    });
+
+    return await generateJWT(user);
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
 export const getAll = async (): Promise<PublicUser[]> => {
   const users = await prisma.user.findMany();
   return users.map(makeExposedUser);
@@ -50,29 +73,6 @@ export const getById = async (id: number): Promise<PublicUser> => {
   }
 
   return makeExposedUser(user);
-};
-
-export const register = async ({
-  name,
-  email,
-  password,
-}: UserCreateInput): Promise<PublicUser> => {
-  try {
-    const passwordHash = await hashPassword(password);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password_hash: passwordHash,
-        roles: [Role.USER],
-      },
-    });
-
-    return makeExposedUser(user);
-  } catch (error) {
-    throw handleDBError(error);
-  }
 };
 
 export const updateById = async (id: number, changes: UserUpdateInput): Promise<PublicUser> => {

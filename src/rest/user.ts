@@ -5,11 +5,11 @@ import type { BudgetAppContext, BudgetAppState} from '../types/koa';
 import type { KoaContext, KoaRouter } from '../types/koa';
 import type {
   RegisterUserRequest,
-  RegisterUserResponse,
   GetAllUsersResponse,
   GetUserByIdResponse,
   UpdateUserRequest,
   UpdateUserResponse,
+  LoginResponse,
 } from '../types/user';
 import type { IdParams } from '../types/common';
 import validate from '../core/validation';
@@ -20,15 +20,16 @@ const getAllUsers = async (ctx: KoaContext<GetAllUsersResponse>) => {
 };
 getAllUsers.validationScheme = null;
 
-const registerUser = async (ctx: KoaContext<RegisterUserResponse, void, RegisterUserRequest>) => {
-  const user = await userService.register(ctx.request.body);
+const registerUser = async (ctx: KoaContext<LoginResponse, void, RegisterUserRequest>) => {
+  const token = await userService.register(ctx.request.body);
   ctx.status = 200;
-  ctx.body = user;
+  ctx.body = { token };
 };
 registerUser.validationScheme = {
   body: {
     name: Joi.string().max(255),
     email: Joi.string().email(),
+    password: Joi.string().min(12).max(128),
   },
 };
 

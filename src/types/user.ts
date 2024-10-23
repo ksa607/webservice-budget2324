@@ -32,7 +32,6 @@ export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'name' | 'e
 
 export interface GetAllUsersResponse extends ListResponse<PublicUser> {}
 export interface GetUserByIdResponse extends PublicUser {}
-export interface RegisterUserResponse extends GetUserByIdResponse {}
 export interface UpdateUserResponse extends GetUserByIdResponse {}
 
 export interface LoginResponse {
