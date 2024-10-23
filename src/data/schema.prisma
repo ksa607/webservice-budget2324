@@ -39,5 +39,8 @@ model User {
 
   id            Int            @id @default(autoincrement()) @db.UnsignedInt
   name          String         @db.VarChar(255)
+  email         String         @unique(map: "idx_user_email_unique") @db.VarChar(255)
+  password_hash String         @db.VarChar(255)
+  roles         Json
   transactions  Transaction[]
 }
