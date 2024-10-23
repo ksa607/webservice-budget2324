@@ -4,8 +4,8 @@ import * as userService from '../service/user';
 import type { BudgetAppContext, BudgetAppState} from '../types/koa';
 import type { KoaContext, KoaRouter } from '../types/koa';
 import type {
-  CreateUserRequest,
-  CreateUserResponse,
+  RegisterUserRequest,
+  RegisterUserResponse,
   GetAllUsersResponse,
   GetUserByIdResponse,
   UpdateUserRequest,
@@ -20,14 +20,15 @@ const getAllUsers = async (ctx: KoaContext<GetAllUsersResponse>) => {
 };
 getAllUsers.validationScheme = null;
 
-const createUser = async (ctx: KoaContext<CreateUserResponse, void, CreateUserRequest>) => {
-  const user = await userService.create(ctx.request.body);
+const registerUser = async (ctx: KoaContext<RegisterUserResponse, void, RegisterUserRequest>) => {
+  const user = await userService.register(ctx.request.body);
   ctx.status = 200;
   ctx.body = user;
 };
-createUser.validationScheme = {
+registerUser.validationScheme = {
   body: {
     name: Joi.string().max(255),
+    email: Joi.string().email(),
   },
 };
 
@@ -51,6 +52,7 @@ updateUserById.validationScheme = {
   params: { id: Joi.number().integer().positive() },
   body: {
     name: Joi.string().max(255),
+    email: Joi.string().email(),
   },
 };
 
@@ -69,7 +71,7 @@ export default (parent: KoaRouter) => {
 
   router.get('/', validate(getAllUsers.validationScheme), getAllUsers);
   router.get('/:id', validate(getUserById.validationScheme), getUserById);
-  router.post('/', validate(createUser.validationScheme), createUser);
+  router.post('/', validate(registerUser.validationScheme), registerUser);
   router.put('/:id', validate(updateUserById.validationScheme), updateUserById);
   router.delete('/:id', validate(deleteUserById.validationScheme), deleteUserById);
 

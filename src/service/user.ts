@@ -1,36 +1,60 @@
 import ServiceError from '../core/serviceError';
 import { prisma } from '../data';
-import type { User, UserCreateInput, UserUpdateInput } from '../types/user';
+import type { User, UserCreateInput, UserUpdateInput, PublicUser } from '../types/user';
+import { hashPassword } from '../core/password';
 import handleDBError from './_handleDBError';
 
-export const getAll = async (): Promise<User[]> => {
-  return prisma.user.findMany();
+const makeExposedUser = ({ id, name, email }: User): PublicUser => ({
+  id,
+  name,
+  email,
+});
+
+export const getAll = async (): Promise<PublicUser[]> => {
+  const users = await prisma.user.findMany();
+  return users.map(makeExposedUser);
 };
 
-export const getById = async (id: number): Promise<User> => {
+export const getById = async (id: number): Promise<PublicUser> => {
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
     throw ServiceError.notFound('No user with this id exists');
   }
 
-  return user;
+  return makeExposedUser(user);
 };
 
-export const create = async ({ name }: UserCreateInput): Promise<User> => {
+export const register = async ({
+  name,
+  email,
+  password,
+}: UserCreateInput): Promise<PublicUser> => {
   try {
-    return await prisma.user.create({ data: { name } });
+    const passwordHash = await hashPassword(password);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password_hash: passwordHash,
+        roles: ['user'],
+      },
+    });
+
+    return makeExposedUser(user);
   } catch (error) {
     throw handleDBError(error);
   }
 };
 
-export const updateById = async (id: number, { name }: UserUpdateInput): Promise<User> => {
+export const updateById = async (id: number, changes: UserUpdateInput): Promise<PublicUser> => {
   try {
-    return await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
-      data: { name },
+      data: changes,
     });
+    return makeExposedUser(user);
   } catch (error) {
     throw handleDBError(error);
   }

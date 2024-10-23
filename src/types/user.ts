@@ -10,16 +10,22 @@ export interface User extends Entity {
 
 export interface UserCreateInput {
   name: string;
+  email: string;
+  password: string;
 }
 
-export interface UserUpdateInput extends UserCreateInput {}
+export interface PublicUser extends Pick<User, 'id' | 'name' | 'email'> {}
 
-export interface CreateUserRequest {
+export interface UserUpdateInput extends Pick<UserCreateInput, 'name' | 'email'> {}
+
+export interface RegisterUserRequest {
   name: string;
+  email: string;
+  password: string;
 }
-export interface UpdateUserRequest extends CreateUserRequest {}
+export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'name' | 'email'> {}
 
-export interface GetAllUsersResponse extends ListResponse<User> {}
-export interface GetUserByIdResponse extends User {}
-export interface CreateUserResponse extends GetUserByIdResponse {}
+export interface GetAllUsersResponse extends ListResponse<PublicUser> {}
+export interface GetUserByIdResponse extends PublicUser {}
+export interface RegisterUserResponse extends GetUserByIdResponse {}
 export interface UpdateUserResponse extends GetUserByIdResponse {}
