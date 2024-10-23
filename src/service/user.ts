@@ -2,6 +2,7 @@ import ServiceError from '../core/serviceError';
 import { prisma } from '../data';
 import type { User, UserCreateInput, UserUpdateInput, PublicUser } from '../types/user';
 import { hashPassword } from '../core/password';
+import Role from '../core/roles';
 import handleDBError from './_handleDBError';
 
 const makeExposedUser = ({ id, name, email }: User): PublicUser => ({
@@ -38,7 +39,7 @@ export const register = async ({
         name,
         email,
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: [Role.USER],
       },
     });
 

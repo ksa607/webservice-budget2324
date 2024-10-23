@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../core/password';
+import Role from '../core/roles';
 
 const prisma = new PrismaClient();
 
@@ -15,21 +16,21 @@ async function main() {
         name: 'Thomas Aelbrecht',
         email: 'thomas.aelbrecht@hogent.be',
         password_hash: passwordHash,
-        roles: ['admin', 'user'],
+        roles: JSON.stringify([Role.ADMIN, Role.USER]),
       },
       {
         id: 2,
         name: 'Pieter Van Der Helst',
         email: 'pieter.vanderhelst@hogent.be',
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       {
         id: 3,
         name: 'Karine Samyn',
         email: 'karine.samyn@hogent.be',
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
     ],
   });
