@@ -1,7 +1,8 @@
 import ServiceError from '../core/serviceError';
 import { prisma } from '../data';
 import type { User, UserCreateInput, UserUpdateInput, PublicUser } from '../types/user';
-import { hashPassword } from '../core/password';
+import { hashPassword, verifyPassword } from '../core/password';
+import { generateJWT } from '../core/jwt'; 
 import Role from '../core/roles';
 import handleDBError from './_handleDBError';
 
@@ -10,6 +11,31 @@ const makeExposedUser = ({ id, name, email }: User): PublicUser => ({
   name,
   email,
 });
+
+export const login = async (
+  email: string,
+  password: string,
+): Promise<string> => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    // DO NOT expose we don't know the user
+    throw ServiceError.unauthorized(
+      'The given email and password do not match',
+    );
+  }
+
+  const passwordValid = await verifyPassword(password, user.password_hash);
+
+  if (!passwordValid) {
+    // DO NOT expose we know the user but an invalid password was given
+    throw ServiceError.unauthorized(
+      'The given email and password do not match',
+    );
+  }
+
+  return await generateJWT(user);
+};
 
 export const getAll = async (): Promise<PublicUser[]> => {
   const users = await prisma.user.findMany();

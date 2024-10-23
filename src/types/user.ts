@@ -18,6 +18,11 @@ export interface PublicUser extends Pick<User, 'id' | 'name' | 'email'> {}
 
 export interface UserUpdateInput extends Pick<UserCreateInput, 'name' | 'email'> {}
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 export interface RegisterUserRequest {
   name: string;
   email: string;
@@ -29,3 +34,7 @@ export interface GetAllUsersResponse extends ListResponse<PublicUser> {}
 export interface GetUserByIdResponse extends PublicUser {}
 export interface RegisterUserResponse extends GetUserByIdResponse {}
 export interface UpdateUserResponse extends GetUserByIdResponse {}
+
+export interface LoginResponse {
+  token: string;
+}
