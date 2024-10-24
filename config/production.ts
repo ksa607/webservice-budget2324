@@ -8,6 +8,7 @@ export default {
     maxAge: 3 * 60 * 60,
   },
   auth: {
+    maxDelay: 5000, // ms (5 seconds)
     argon: {
       hashLength: 32,
       timeCost: 6,

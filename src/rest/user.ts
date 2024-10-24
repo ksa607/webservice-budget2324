@@ -15,7 +15,7 @@ import type {
 } from '../types/user';
 import type { IdParams } from '../types/common';
 import validate from '../core/validation';
-import { requireAuthentication, makeRequireRole } from '../core/auth';
+import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
 import Role from '../core/roles';
 
 const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
@@ -93,6 +93,7 @@ export default (parent: KoaRouter) => {
 
   router.post(
     '/',
+    authDelay,
     validate(registerUser.validationScheme),
     registerUser,
   );
