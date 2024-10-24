@@ -1,8 +1,11 @@
 import type { ParameterizedContext } from 'koa';
 import type Application from 'koa';
 import type Router from '@koa/router';
+import type { SessionInfo } from './auth';
 
-export interface BudgetAppState {}
+export interface BudgetAppState {
+  session: SessionInfo;
+}
 
 export interface BudgetAppContext {}
 

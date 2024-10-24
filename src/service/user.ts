@@ -1,9 +1,12 @@
+import jwt from 'jsonwebtoken';
 import ServiceError from '../core/serviceError';
 import { prisma } from '../data';
-import type { User, UserCreateInput, UserUpdateInput, PublicUser } from '../types/user';
 import { hashPassword, verifyPassword } from '../core/password';
-import { generateJWT } from '../core/jwt'; 
+import { generateJWT, verifyJWT } from '../core/jwt';
+import { getLogger } from '../core/logging';
 import Role from '../core/roles';
+import type { User, UserCreateInput, UserUpdateInput, PublicUser } from '../types/user';
+import type { SessionInfo } from '../types/auth';
 import handleDBError from './_handleDBError';
 
 const makeExposedUser = ({ id, name, email }: User): PublicUser => ({
@@ -11,6 +14,51 @@ const makeExposedUser = ({ id, name, email }: User): PublicUser => ({
   name,
   email,
 });
+
+export const checkAndParseSession = async (
+  authHeader?: string,
+): Promise<SessionInfo> => {
+  if (!authHeader) {
+    throw ServiceError.unauthorized('You need to be signed in');
+  }
+
+  if (!authHeader.startsWith('Bearer ')) {
+    throw ServiceError.unauthorized('Invalid authentication token');
+  }
+
+  const authToken = authHeader.substring(7);
+
+  try {
+    const { roles, sub } = await verifyJWT(authToken);
+
+    return {
+      userId: Number(sub),
+      roles,
+    };
+  } catch (error: any) {
+    getLogger().error(error.message, { error });
+
+    if (error instanceof jwt.TokenExpiredError) {
+      throw ServiceError.unauthorized('The token has expired');
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      throw ServiceError.unauthorized(
+        `Invalid authentication token: ${error.message}`,
+      );
+    } else {
+      throw ServiceError.unauthorized(error.message);
+    }
+  }
+};
+
+export const checkRole = (role: string, roles: string[]): void => {
+  const hasPermission = roles.includes(role);
+
+  if (!hasPermission) {
+    throw ServiceError.forbidden(
+      'You are not allowed to view this part of the application',
+    );
+  }
+};
 
 export const login = async (
   email: string,
