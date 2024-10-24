@@ -23,6 +23,9 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface GetUserRequest {
+  id: number | 'me';
+}
 export interface RegisterUserRequest {
   name: string;
   email: string;

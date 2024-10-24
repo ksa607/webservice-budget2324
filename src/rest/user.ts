@@ -1,3 +1,4 @@
+import type { Next } from 'koa';
 import Router from '@koa/router';
 import Joi from 'joi';
 import * as userService from '../service/user';
@@ -10,11 +11,27 @@ import type {
   UpdateUserRequest,
   UpdateUserResponse,
   LoginResponse,
+  GetUserRequest,
 } from '../types/user';
 import type { IdParams } from '../types/common';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
+
+const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
+  const { userId, roles } = ctx.state.session;
+  const { id } = ctx.params;
+
+  // You can only get our own data unless you're an admin
+  if (id !== 'me' && id !== userId && !roles.includes(Role.ADMIN)) {
+    return ctx.throw(
+      403,
+      'You are not allowed to view this user\'s information',
+      { code: 'FORBIDDEN' },
+    );
+  }
+  return next();
+};
 
 const getAllUsers = async (ctx: KoaContext<GetAllUsersResponse>) => {
   const users = await userService.getAll();
@@ -35,8 +52,10 @@ registerUser.validationScheme = {
   },
 };
 
-const getUserById = async (ctx: KoaContext<GetUserByIdResponse, IdParams>) => {
-  const user = await userService.getById(ctx.params.id);
+const getUserById = async (ctx: KoaContext<GetUserByIdResponse, GetUserRequest>) => {
+  const user = await userService.getById(
+    ctx.params.id === 'me' ? ctx.state.session.userId : ctx.params.id,
+  );
   ctx.status = 200;
   ctx.body = user;
 };
@@ -91,18 +110,21 @@ export default (parent: KoaRouter) => {
     '/:id',
     requireAuthentication,
     validate(getUserById.validationScheme),
+    checkUserId,
     getUserById,
   );
   router.put(
     '/:id',
     requireAuthentication,
     validate(updateUserById.validationScheme),
+    checkUserId,
     updateUserById,
   );
   router.delete(
     '/:id',
     requireAuthentication,
     validate(deleteUserById.validationScheme),
+    checkUserId,
     deleteUserById,
   );
 
