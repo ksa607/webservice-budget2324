@@ -17,16 +17,18 @@ const TRANSACTION_SELECT = {
   },
 };
 
-export const getAll = async (): Promise<Transaction[]> => {
+export const getAll = async (userId: number): Promise<Transaction[]> => {
   return prisma.transaction.findMany({
+    where: { user_id: userId },
     select: TRANSACTION_SELECT,
   });
 };
 
-export const getById = async (id: number): Promise<Transaction> => {
+export const getById = async (id: number, userId: number): Promise<Transaction> => {
   const transaction = await prisma.transaction.findUnique({
     where: {
       id,
+      user_id: userId,
     },
     select: TRANSACTION_SELECT,
   });
@@ -87,11 +89,12 @@ export const updateById = async (id: number, {
   }
 };
 
-export const deleteById = async (id: number): Promise<void> => {
+export const deleteById = async (id: number, userId: number): Promise<void> => {
   try {
     await prisma.transaction.delete({
       where: {
         id,
+        user_id: userId,
       },
     });
   } catch (error) {
@@ -99,12 +102,11 @@ export const deleteById = async (id: number): Promise<void> => {
   }
 };
 
-export const getTransactionsByPlaceId = async (placeId: number): Promise<Transaction[]> => {
+export const getTransactionsByPlaceId = async (placeId: number, userId: number): Promise<Transaction[]> => {
   return prisma.transaction.findMany({
     where: {
-      AND: [
-        { place_id: placeId },
-      ],
+      place_id: placeId,
+      user_id: userId,
     },
     select: TRANSACTION_SELECT,
   });

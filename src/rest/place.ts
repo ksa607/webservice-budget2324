@@ -70,7 +70,7 @@ deletePlace.validationScheme = {
 };
 
 const getTransactionsByPlaceId = async (ctx: KoaContext<GetAllTransactionsReponse, IdParams>) => {
-  const transactions = await transactionService.getTransactionsByPlaceId(ctx.params.id);
+  const transactions = await transactionService.getTransactionsByPlaceId(ctx.params.id, ctx.state.session.userId);
   ctx.body = {
     items: transactions,
   };

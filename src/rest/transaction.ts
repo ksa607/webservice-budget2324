@@ -13,10 +13,11 @@ import type {
 } from '../types/transaction';
 import type { IdParams } from '../types/common';
 import validate from '../core/validation';
+import { requireAuthentication } from '../core/auth';
 
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
-    items: await transactionService.getAll(),
+    items: await transactionService.getAll(ctx.state.session.userId),
   };
 };
 getAllTransactions.validationScheme = null;
@@ -36,7 +37,7 @@ createTransaction.validationScheme = {
 };
 
 const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
-  ctx.body = await transactionService.getById(ctx.params.id);
+  ctx.body = await transactionService.getById(ctx.params.id, ctx.state.session.userId);
 };
 getTransactionById.validationScheme = {
   params: {
@@ -58,7 +59,7 @@ updateTransaction.validationScheme = {
 };
 
 const deleteTransaction = async (ctx: KoaContext<void, IdParams>) => {
-  await transactionService.deleteById(ctx.params.id);
+  await transactionService.deleteById(ctx.params.id, ctx.state.session.userId);
   ctx.status = 204;
 };
 deleteTransaction.validationScheme = {
@@ -71,6 +72,8 @@ export default (parent: KoaRouter) => {
   const router = new Router<BudgetAppState, BudgetAppContext>({
     prefix: '/transactions',
   });
+
+  router.use(requireAuthentication);
 
   router.get('/', validate(getAllTransactions.validationScheme), getAllTransactions);
   router.post('/', validate(createTransaction.validationScheme), createTransaction);
