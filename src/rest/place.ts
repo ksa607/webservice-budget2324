@@ -15,6 +15,7 @@ import type {
 import type { IdParams } from '../types/common';
 import type { GetAllTransactionsReponse } from '../types/transaction';
 import validate from '../core/validation';
+import { requireAuthentication } from '../core/auth';
 
 const getAllPlaces = async (ctx: KoaContext<GetAllPlacesResponse>) => {
   const places = await placeService.getAll();
@@ -84,6 +85,8 @@ export default (parent: KoaRouter) => {
   const router = new Router<BudgetAppState, BudgetAppContext>({
     prefix: '/places',
   });
+
+  router.use(requireAuthentication);
 
   router.get('/', validate(getAllPlaces.validationScheme), getAllPlaces);
   router.get('/:id', validate(getPlaceById.validationScheme), getPlaceById);

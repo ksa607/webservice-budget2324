@@ -13,6 +13,8 @@ import type {
 } from '../types/user';
 import type { IdParams } from '../types/common';
 import validate from '../core/validation';
+import { requireAuthentication, makeRequireRole } from '../core/auth';
+import Role from '../core/roles';
 
 const getAllUsers = async (ctx: KoaContext<GetAllUsersResponse>) => {
   const users = await userService.getAll();
@@ -70,11 +72,39 @@ deleteUserById.validationScheme = {
 export default (parent: KoaRouter) => {
   const router = new Router<BudgetAppState, BudgetAppContext>({ prefix: '/users' });
 
-  router.get('/', validate(getAllUsers.validationScheme), getAllUsers);
-  router.get('/:id', validate(getUserById.validationScheme), getUserById);
-  router.post('/', validate(registerUser.validationScheme), registerUser);
-  router.put('/:id', validate(updateUserById.validationScheme), updateUserById);
-  router.delete('/:id', validate(deleteUserById.validationScheme), deleteUserById);
+  router.post(
+    '/',
+    validate(registerUser.validationScheme),
+    registerUser,
+  );
+
+  const requireAdmin = makeRequireRole(Role.ADMIN);
+
+  router.get(
+    '/',
+    requireAuthentication,
+    requireAdmin,
+    validate(getAllUsers.validationScheme),
+    getAllUsers,
+  );
+  router.get(
+    '/:id',
+    requireAuthentication,
+    validate(getUserById.validationScheme),
+    getUserById,
+  );
+  router.put(
+    '/:id',
+    requireAuthentication,
+    validate(updateUserById.validationScheme),
+    updateUserById,
+  );
+  router.delete(
+    '/:id',
+    requireAuthentication,
+    validate(deleteUserById.validationScheme),
+    deleteUserById,
+  );
 
   parent
     .use(router.routes())

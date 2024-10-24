@@ -22,6 +22,6 @@
     "**/*.ts"
   ],
   "exclude": [
-    "test"
+    "tests"
   ]
 }

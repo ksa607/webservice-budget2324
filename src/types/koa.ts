@@ -7,7 +7,17 @@ export interface BudgetAppState {
   session: SessionInfo;
 }
 
-export interface BudgetAppContext {}
+export interface BudgetAppContext<
+  Params = unknown,
+  RequestBody = unknown,
+  Query = unknown,
+> {
+  request: {
+    body: RequestBody;
+    query: Query;
+  };
+  params: Params;
+}
 
 export type KoaContext<
   ResponseBody = unknown,
@@ -15,14 +25,11 @@ export type KoaContext<
   RequestBody = unknown,
   Query = unknown,
 > =
-  ParameterizedContext<BudgetAppState, BudgetAppContext, ResponseBody>
-  & {
-    request: {
-      body: RequestBody;
-      query: Query;
-    };
-    params: Params;
-  };
+  ParameterizedContext<
+    BudgetAppState,
+    BudgetAppContext<Params, RequestBody, Query>,
+    ResponseBody
+  >;
 
 export interface KoaApplication extends Application<BudgetAppState, BudgetAppContext> {}
 
