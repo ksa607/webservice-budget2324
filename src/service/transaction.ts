@@ -1,6 +1,7 @@
 import { prisma } from '../data';
 import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from '../types/transaction';
 import ServiceError from '../core/serviceError';
+import Role from '../core/roles';
 import handleDBError from './_handleDBError';
 import * as placeService from './place';
 
@@ -17,18 +18,20 @@ const TRANSACTION_SELECT = {
   },
 };
 
-export const getAll = async (userId: number): Promise<Transaction[]> => {
+export const getAll = async (userId: number, roles: string[]): Promise<Transaction[]> => {
   return prisma.transaction.findMany({
-    where: { user_id: userId },
+    where:  roles.includes(Role.ADMIN) ? {} : { user_id: userId },
     select: TRANSACTION_SELECT,
   });
 };
 
-export const getById = async (id: number, userId: number): Promise<Transaction> => {
+export const getById = async (id: number, userId: number, roles: string[]): Promise<Transaction> => {
+  const extraFilter = roles.includes(Role.ADMIN) ? {} : { user_id: userId };
+
   const transaction = await prisma.transaction.findUnique({
     where: {
       id,
-      user_id: userId,
+      ...extraFilter,
     },
     select: TRANSACTION_SELECT,
   });
