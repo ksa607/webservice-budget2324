@@ -18,8 +18,8 @@ export interface TransactionCreateInput {
 
 export interface TransactionUpdateInput extends TransactionCreateInput {}
 
-export interface CreateTransactionRequest extends TransactionCreateInput {}
-export interface UpdateTransactionRequest extends TransactionUpdateInput {}
+export interface CreateTransactionRequest extends Omit<TransactionCreateInput, 'userId'> {}
+export interface UpdateTransactionRequest extends Omit<TransactionUpdateInput, 'userId'> {}
 
 export interface GetAllTransactionsReponse extends ListResponse<Transaction> {}
 export interface GetTransactionByIdResponse extends Transaction {}

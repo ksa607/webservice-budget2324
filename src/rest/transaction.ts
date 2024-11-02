@@ -17,13 +17,19 @@ import { requireAuthentication } from '../core/auth';
 
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
-    items: await transactionService.getAll(ctx.state.session.userId),
+    items: await transactionService.getAll(
+      ctx.state.session.userId,
+      ctx.state.session.roles,
+    ),
   };
 };
 getAllTransactions.validationScheme = null;
 
 const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void, CreateTransactionRequest>) => {
-  const newTransaction = await transactionService.create(ctx.request.body);
+  const newTransaction = await transactionService.create({
+    ...ctx.request.body,
+    userId: ctx.state.session.userId,
+  });
   ctx.status = 201;
   ctx.body = newTransaction;
 };
@@ -32,21 +38,30 @@ createTransaction.validationScheme = {
     amount: Joi.number().invalid(0),
     date: Joi.date().iso().less('now'),
     placeId: Joi.number().integer().positive(),
-    userId: Joi.number().integer().positive(),
   },
 };
 
 const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
-  ctx.body = await transactionService.getById(ctx.params.id, ctx.state.session.userId);
+  ctx.body = await transactionService.getById(
+    ctx.params.id, 
+    ctx.state.session.userId,
+    ctx.state.session.roles,
+  );
 };
 getTransactionById.validationScheme = {
   params: {
-    id: Joi.number().integer().positive(),
+    id: Joi.alternatives().try(
+      Joi.number().integer().positive(),
+      Joi.string().valid('me'),
+    ),
   },
 };
 
 const updateTransaction = async (ctx: KoaContext<UpdateTransactionResponse, IdParams, UpdateTransactionRequest>) => {
-  ctx.body = await transactionService.updateById(ctx.params.id, ctx.request.body);
+  ctx.body = await transactionService.updateById(ctx.params.id, {
+    ...ctx.request.body,
+    userId: ctx.state.session.userId,
+  });
 };
 updateTransaction.validationScheme = {
   params: { id: Joi.number().integer().positive() },
@@ -54,7 +69,6 @@ updateTransaction.validationScheme = {
     amount: Joi.number().invalid(0),
     date: Joi.date().iso().less('now'),
     placeId: Joi.number().integer().positive(),
-    userId: Joi.number().integer().positive(),
   },
 };
 
