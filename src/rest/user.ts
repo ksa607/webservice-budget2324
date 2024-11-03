@@ -61,7 +61,10 @@ const getUserById = async (ctx: KoaContext<GetUserByIdResponse, GetUserRequest>)
 };
 getUserById.validationScheme = {
   params: {
-    id: Joi.number().integer().positive(),
+    id: Joi.alternatives().try(
+      Joi.number().integer().positive(),
+      Joi.string().valid('me'),
+    ),
   },
 };
 
