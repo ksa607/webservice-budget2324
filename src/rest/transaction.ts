@@ -50,10 +50,7 @@ const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, Id
 };
 getTransactionById.validationScheme = {
   params: {
-    id: Joi.alternatives().try(
-      Joi.number().integer().positive(),
-      Joi.string().valid('me'),
-    ),
+    id: Joi.number().integer().positive(),
   },
 };
 
