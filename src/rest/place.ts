@@ -166,6 +166,29 @@ getPlaceById.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/places:
+ *   post:
+ *     summary: Create a new place
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       $ref: "#/components/requestBodies/Place"
+ *     responses:
+ *       200:
+ *         description: The created place
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Place"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ */
 const createPlace = async (ctx: KoaContext<CreatePlaceResponse, void, CreatePlaceRequest>) => {
   const place = await placeService.create(ctx.request.body);
   ctx.status = 201;
