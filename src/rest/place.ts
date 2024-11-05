@@ -201,6 +201,33 @@ createPlace.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/places/{id}:
+ *   put:
+ *     summary: Update an existing place
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     requestBody:
+ *       $ref: "#/components/requestBodies/Place"
+ *     responses:
+ *       200:
+ *         description: The updated place
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Place"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const updatePlace = async (ctx: KoaContext<UpdatePlaceResponse, IdParams, UpdatePlaceRequest>) => {
   const place = await placeService.updateById(ctx.params.id, ctx.request.body);
   ctx.body = place;
