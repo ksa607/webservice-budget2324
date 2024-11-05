@@ -1,6 +1,12 @@
 import type {Config} from 'jest';
 
 const config: Config = {
+  collectCoverageFrom: [
+    './src/service/**/*.ts',
+    './src/rest/**/*.ts',
+  ],
+  coverageDirectory: '__tests__/coverage',
+
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: 'v8',
 
