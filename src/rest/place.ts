@@ -17,6 +17,85 @@ import type { GetAllTransactionsReponse } from '../types/transaction';
 import validate from '../core/validation';
 import { requireAuthentication } from '../core/auth';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Places
+ *   description: Represents an income source or a expense item
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Place:
+ *       allOf:
+ *         - $ref: "#/components/schemas/Base"
+ *         - type: object
+ *           required:
+ *             - id
+ *             - name
+ *             - rating
+ *           properties:
+ *             name:
+ *               type: "string"
+ *             rating:
+ *               type: "integer"
+ *               minimum: 1
+ *               maximum: 5
+ *           example:
+ *             id: 123
+ *             name: Loon
+ *             rating: 4
+ *     PlacesList:
+ *       required:
+ *         - items
+ *       properties:
+ *         items:
+ *           type: array
+ *           items:
+ *             $ref: "#/components/schemas/Place"
+ *
+ *   requestBodies:
+ *     Place:
+ *       description: The place info to save
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *                 minimum: 1
+ *                 maximum: 5
+ *             required:
+ *               - name
+ */
+
+/**
+ * @swagger
+ * /api/places:
+ *   get:
+ *     summary: Get all places
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of places
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/PlacesList"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ */
 const getAllPlaces = async (ctx: KoaContext<GetAllPlacesResponse>) => {
   const places = await placeService.getAll();
   ctx.body = {
