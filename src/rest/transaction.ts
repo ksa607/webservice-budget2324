@@ -17,6 +17,13 @@ import { requireAuthentication } from '../core/auth';
 
 /**
  * @swagger
+ * tags:
+ *   name: Transactions
+ *   description: Represents a deposit of withdrawel of a user's budget
+ */
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     Transaction:
@@ -58,8 +65,48 @@ import { requireAuthentication } from '../core/auth';
  *           type: array
  *           items:
  *             $ref: "#/components/schemas/Transaction"
+ *
+ *   requestBodies:
+ *     Transaction:
+ *       description: The transaction info to save.
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: integer
+ *                 example: 101
+ *               date:
+ *                 type: string
+ *                 format: "date-time"
+ *               placeId:
+ *                 type: integer
+ *                 format: int32
  */
 
+/**
+ * @swagger
+ * /api/transactions:
+ *   get:
+ *     summary: Get all transactions
+ *     tags:
+ *      - Transactions
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transactions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/TransactionsList"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ */
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
     items: await transactionService.getAll(
@@ -70,6 +117,32 @@ const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) =>
 };
 getAllTransactions.validationScheme = null;
 
+/**
+ * @swagger
+ * /api/transactions:
+ *   post:
+ *     summary: Create a new transaction
+ *     description: Creates a new transaction for the signed in user.
+ *     tags:
+ *      - Transactions
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       $ref: "#/components/requestBodies/Transaction"
+ *     responses:
+ *       200:
+ *         description: The created transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Transaction"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const createTransaction = async (ctx: KoaContext<CreateTransactionResponse, void, CreateTransactionRequest>) => {
   const newTransaction = await transactionService.create({
     ...ctx.request.body,
@@ -86,6 +159,31 @@ createTransaction.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   get:
+ *     summary: Get a single transaction
+ *     tags:
+ *      - Transactions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     responses:
+ *       200:
+ *         description: The requested transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Transaction"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const getTransactionById = async (ctx: KoaContext<GetTransactionByIdResponse, IdParams>) => {
   ctx.body = await transactionService.getById(
     ctx.params.id, 
@@ -99,6 +197,33 @@ getTransactionById.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   put:
+ *     summary: Update an existing transaction
+ *     tags:
+ *      - Transactions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     requestBody:
+ *       $ref: "#/components/requestBodies/Transaction"
+ *     responses:
+ *       200:
+ *         description: The updated transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Transaction"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const updateTransaction = async (ctx: KoaContext<UpdateTransactionResponse, IdParams, UpdateTransactionRequest>) => {
   ctx.body = await transactionService.updateById(ctx.params.id, {
     ...ctx.request.body,
@@ -114,6 +239,27 @@ updateTransaction.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   delete:
+ *     summary: Delete a transaction
+ *     tags:
+ *      - Transactions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     responses:
+ *       204:
+ *         description: No response, the delete was successful.
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const deleteTransaction = async (ctx: KoaContext<void, IdParams>) => {
   await transactionService.deleteById(ctx.params.id, ctx.state.session.userId);
   ctx.status = 204;
