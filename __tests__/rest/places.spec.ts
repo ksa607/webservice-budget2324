@@ -1,7 +1,8 @@
-import supertest from 'supertest';
-import createServer from '../../src/createServer';
-import type { Server } from '../../src/createServer';
+import type supertest from 'supertest';
 import { prisma } from '../../src/data';
+import withServer from '../helpers/withServer';
+import { login } from '../helpers/login';
+import testAuthHeader from '../helpers/testAuthHeader';
 
 const data = {
   transactions: [
@@ -43,31 +44,22 @@ const data = {
       rating: 4,
     },
   ],
-  users: [
-    {
-      id: 1,
-      name: 'Test User',
-    },
-  ],
 };
 
 const dataToDelete = {
   transactions: [1, 2, 3],
   places: [1, 2, 3],
-  users: [1],
 };
 
 describe('Places', () => {
-  let server: Server;
+
   let request: supertest.Agent;
+  let authHeader: string;
+
+  withServer((r) => (request = r));
 
   beforeAll(async () => {
-    server = await createServer();
-    request = supertest(server.getApp().callback());
-  });
-
-  afterAll(async () => {
-    await server.stop();
+    authHeader = await login(request);
   });
 
   const url = '/api/places';
@@ -83,7 +75,7 @@ describe('Places', () => {
     });
 
     it('should 200 and return all places', async () => {
-      const response = await request.get(url);
+      const response = await request.get(url).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.items.length).toBe(3);
@@ -99,12 +91,14 @@ describe('Places', () => {
     });
 
     it('should 400 when given an argument', async () => {
-      const response = await request.get(`${url}?invalid=true`);
+      const response = await request.get(`${url}?invalid=true`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.query).toHaveProperty('invalid');
     });
+
+    testAuthHeader(() => request.get(url));
   });
 
   describe('GET /api/places/:id', () => {
@@ -118,7 +112,7 @@ describe('Places', () => {
     });
 
     it('should 200 and return the requested place', async () => {
-      const response = await request.get(`${url}/1`);
+      const response = await request.get(`${url}/1`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
@@ -130,7 +124,7 @@ describe('Places', () => {
     });
 
     it('should 404 when requesting not existing place', async () => {
-      const response = await request.get(`${url}/200`);
+      const response = await request.get(`${url}/200`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
 
@@ -143,12 +137,14 @@ describe('Places', () => {
     });
 
     it('should 400 with invalid place id', async () => {
-      const response = await request.get(`${url}/invalid`);
+      const response = await request.get(`${url}/invalid`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.params).toHaveProperty('id');
     });
+
+    testAuthHeader(() => request.get(`${url}/1`));
   });
 
   describe('POST /api/places', () => {
@@ -164,7 +160,8 @@ describe('Places', () => {
         .send({
           name: 'Lovely place',
           rating: 5,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.id).toBeTruthy();
@@ -176,7 +173,8 @@ describe('Places', () => {
 
     it('should 400 for duplicate place name', async () => {
       const response = await request.post(url)
-        .send({ name: 'Lovely place' });
+        .send({ name: 'Lovely place' })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toMatchObject({
@@ -188,7 +186,8 @@ describe('Places', () => {
 
     it('should 400 when missing name', async () => {
       const response = await request.post(url)
-        .send({ rating: 3 });
+        .send({ rating: 3 })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -200,7 +199,8 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 0,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -212,7 +212,8 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 6,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -224,12 +225,15 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 3.5,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.body).toHaveProperty('rating');
     });
+
+    testAuthHeader(() => request.post(url));
   });
 
   describe('PUT /api/places/:id', () => {
@@ -247,7 +251,8 @@ describe('Places', () => {
         .send({
           name: 'Changed name',
           rating: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
@@ -262,7 +267,8 @@ describe('Places', () => {
         .send({
           name: 'Changed name',
           rating: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toMatchObject({
@@ -274,7 +280,8 @@ describe('Places', () => {
 
     it('should 400 when missing name', async () => {
       const response = await request.put(`${url}/1`)
-        .send({ rating: 3 });
+        .send({ rating: 3 })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -283,7 +290,8 @@ describe('Places', () => {
 
     it('should 400 when missing rating', async () => {
       const response = await request.put(`${url}/1`)
-        .send({ name: 'The name' });
+        .send({ name: 'The name' })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -295,7 +303,8 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 0,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -307,7 +316,8 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 6,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -319,12 +329,15 @@ describe('Places', () => {
         .send({
           name: 'The wrong place',
           rating: 3.5,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.body).toHaveProperty('rating');
     });
+
+    testAuthHeader(() => request.put(`${url}/1`));
   });
 
   describe('DELETE /api/places/:id', () => {
@@ -334,14 +347,14 @@ describe('Places', () => {
     });
 
     it('should 204 and return nothing', async () => {
-      const response = await request.delete(`${url}/1`);
+      const response = await request.delete(`${url}/1`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toEqual({});
     });
 
     it('should 404 with not existing place', async () => {
-      const response = await request.delete(`${url}/200`);
+      const response = await request.delete(`${url}/200`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -352,30 +365,30 @@ describe('Places', () => {
     });
 
     it('should 400 with invalid place id', async () => {
-      const response = await request.delete(`${url}/invalid`);
+      const response = await request.delete(`${url}/invalid`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.params).toHaveProperty('id');
     });
+
+    testAuthHeader(() => request.delete(`${url}/1`));
   });
 
   describe('GET /api/places/:id/transactions', () => {
 
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
       await prisma.transaction.createMany({ data: data.transactions });
     });
 
     afterAll(async () => {
       await prisma.transaction.deleteMany({ where: { id: { in: dataToDelete.transactions } } });
       await prisma.place.deleteMany({ where: { id: { in: dataToDelete.places } } });
-      await prisma.user.deleteMany({ where: { id: { in: dataToDelete.users } } });
     });
 
     it('should 200 and return the transaction of the given place', async () => {
-      const response = await request.get(`${url}/1/transactions`);
+      const response = await request.get(`${url}/1/transactions`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.items.length).toBe(3);
@@ -409,11 +422,13 @@ describe('Places', () => {
     });
 
     it('should 400 with invalid place id', async () => {
-      const response = await request.get(`${url}/invalid/transactions`);
+      const response = await request.get(`${url}/invalid/transactions`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.params).toHaveProperty('id');
     });
+
+    testAuthHeader(() => request.get(`${url}/1/transactions`));
   });
 });
