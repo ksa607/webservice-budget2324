@@ -50,6 +50,14 @@ import { requireAuthentication } from '../core/auth';
  *               id: 123
  *               name: "Thomas Aelbecht"
  *               email: "thomas.aelbrecht@hogent.be"
+ *     TransactionsList:
+ *       required:
+ *         - items
+ *       properties:
+ *         items:
+ *           type: array
+ *           items:
+ *             $ref: "#/components/schemas/Transaction"
  */
 
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {

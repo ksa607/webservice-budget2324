@@ -271,6 +271,29 @@ deletePlace.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/places/{id}/transactions:
+ *   get:
+ *     summary: Get all transactions for a place
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     responses:
+ *       200:
+ *         description: List of transactions for that place
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/TransactionsList"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ */
 const getTransactionsByPlaceId = async (ctx: KoaContext<GetAllTransactionsReponse, IdParams>) => {
   const transactions = await transactionService.getTransactionsByPlaceId(ctx.params.id, ctx.state.session.userId);
   ctx.body = {
