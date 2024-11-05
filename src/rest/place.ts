@@ -190,6 +190,27 @@ updatePlace.validationScheme = {
   },
 };
 
+/**
+ * @swagger
+ * /api/places/{id}:
+ *   delete:
+ *     summary: Delete a place
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     responses:
+ *       204:
+ *         description: No response, the delete was successful
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const deletePlace = async (ctx: KoaContext<void, IdParams>) => {
   await placeService.deleteById(ctx.params.id);
   ctx.status = 204;
