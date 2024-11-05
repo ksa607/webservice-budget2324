@@ -1,7 +1,7 @@
 import type supertest from 'supertest';
 
 export default function testAuthHeader(requestFactory: () => supertest.Test): void {
-  test('it should 401 when no authorization token provided', async () => {
+  it('should 401 when no authorization token provided', async () => {
     const response = await requestFactory();
 
     expect(response.statusCode).toBe(401);
@@ -9,7 +9,7 @@ export default function testAuthHeader(requestFactory: () => supertest.Test): vo
     expect(response.body.message).toBe('You need to be signed in');
   });
 
-  test('it should 401 when invalid authorization token provided', async () => {
+  it('should 401 when invalid authorization token provided', async () => {
     const response = await requestFactory().set(
       'Authorization',
       'INVALID TOKEN',

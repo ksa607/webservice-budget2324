@@ -1,7 +1,8 @@
-import supertest from 'supertest';
-import createServer from '../../src/createServer';
-import type { Server } from '../../src/createServer';
+import type supertest from 'supertest';
 import { prisma } from '../../src/data';
+import withServer from '../helpers/withServer';
+import { login } from '../helpers/login';
+import testAuthHeader from '../helpers/testAuthHeader';
 
 const data = {
   transactions: [
@@ -34,31 +35,22 @@ const data = {
       rating: 3,
     },
   ],
-  users: [
-    {
-      id: 1,
-      name: 'Test User',
-    },
-  ],
 };
 
 const dataToDelete = {
   transactions: [1, 2, 3],
   places: [1],
-  users: [1],
 };
 
 describe('Transactions', () => {
-  let server: Server;
+
   let request: supertest.Agent;
+  let authHeader: string;
+
+  withServer((r) => (request = r));
 
   beforeAll(async () => {
-    server = await createServer();
-    request = supertest(server.getApp().callback());
-  });
-
-  afterAll(async () => {
-    await server.stop();
+    authHeader = await login(request);
   });
 
   const url = '/api/transactions';
@@ -66,7 +58,6 @@ describe('Transactions', () => {
   describe('GET /api/transactions', () => {
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
       await prisma.transaction.createMany({ data: data.transactions });
     });
 
@@ -77,13 +68,10 @@ describe('Transactions', () => {
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
       });
-      await prisma.user.deleteMany({
-        where: { id: { in: dataToDelete.users } },
-      });
     });
 
     it('should 200 and return all transactions', async () => {
-      const response = await request.get(url);
+      const response = await request.get(url).set('Authorization', authHeader);
       expect(response.status).toBe(200);
 
       expect(response.body.items).toEqual(
@@ -121,21 +109,20 @@ describe('Transactions', () => {
     });
 
     it('should 400 when given an argument', async () => {
-      const response = await request.get(`${url}?invalid=true`);
+      const response = await request.get(`${url}?invalid=true`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.query).toHaveProperty('invalid');
     });
+
+    testAuthHeader(() => request.get(url));
   });
 
   describe('GET /api/transactions/:id', () => {
 
-    const url = '/api/transactions';
-
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
       await prisma.transaction.createMany({ data: data.transactions });
     });
 
@@ -146,13 +133,10 @@ describe('Transactions', () => {
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
       });
-      await prisma.user.deleteMany({
-        where: { id: { in: dataToDelete.users } },
-      });
     });
 
     it('should 200 and return the requested transaction', async () => {
-      const response = await request.get(`${url}/1`);
+      const response = await request.get(`${url}/1`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
 
@@ -173,7 +157,7 @@ describe('Transactions', () => {
     });
 
     it('should 404 when requesting not existing transaction', async () => {
-      const response = await request.get(`${url}/200`);
+      const response = await request.get(`${url}/200`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -184,12 +168,14 @@ describe('Transactions', () => {
     });
 
     it('should 400 with invalid transaction id', async () => {
-      const response = await request.get(`${url}/invalid`);
+      const response = await request.get(`${url}/invalid`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.params).toHaveProperty('id');
     });
+
+    testAuthHeader(() => request.get(`${url}/1`));
   });
 
   describe('POST /api/transactions', () => {
@@ -197,7 +183,6 @@ describe('Transactions', () => {
 
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
     });
 
     afterAll(async () => {
@@ -208,10 +193,6 @@ describe('Transactions', () => {
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
       });
-
-      await prisma.user.deleteMany({
-        where: { id: { in: dataToDelete.users } },
-      });
     });
 
     it('should 201 and return the created transaction', async () => {
@@ -219,8 +200,8 @@ describe('Transactions', () => {
         amount: 102,
         date: '2021-05-27T13:00:00.000Z',
         placeId: 1,
-        userId: 1,
-      });
+      })
+        .set('Authorization', authHeader);
     
       expect(response.status).toBe(201);
       expect(response.body.id).toBeTruthy();
@@ -245,8 +226,8 @@ describe('Transactions', () => {
           amount: -125,
           date: '2021-05-27T13:00:00.000Z',
           placeId: 123,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -261,7 +242,8 @@ describe('Transactions', () => {
         .send({
           date: '2021-05-27T13:00:00.000Z',
           placeId: 4,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -273,7 +255,8 @@ describe('Transactions', () => {
         .send({
           amount: 102,
           placeId: 4,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -285,19 +268,21 @@ describe('Transactions', () => {
         .send({
           amount: 102,
           date: '2021-05-27T13:00:00.000Z',
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.body).toHaveProperty('placeId');
     });
+
+    testAuthHeader(() => request.post(url));
   });
 
   describe('PUT /api/transactions/:id', () => {
 
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
       await prisma.transaction.createMany({ data: data.transactions });
     });
 
@@ -309,10 +294,6 @@ describe('Transactions', () => {
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
       });
-
-      await prisma.user.deleteMany({
-        where: { id: { in: dataToDelete.users } },
-      });
     });
 
     it('should 200 and return the updated transaction', async () => {
@@ -321,8 +302,8 @@ describe('Transactions', () => {
           amount: -125,
           date: '2021-05-27T13:00:00.000Z',
           placeId: 1,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.id).toEqual(1);
@@ -345,8 +326,8 @@ describe('Transactions', () => {
           amount: -125,
           date: '2021-05-27T13:00:00.000Z',
           placeId: 1,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -362,8 +343,8 @@ describe('Transactions', () => {
           amount: -125,
           date: '2021-05-27T13:00:00.000Z',
           placeId: 123,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -378,8 +359,8 @@ describe('Transactions', () => {
         .send({
           date: '2021-05-27T13:00:00.000Z',
           placeId: 1,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -391,8 +372,8 @@ describe('Transactions', () => {
         .send({
           amount: 102,
           placeId: 1,
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -404,21 +385,21 @@ describe('Transactions', () => {
         .send({
           amount: 102,
           date: '2021-05-27T13:00:00.000Z',
-          userId: 1,
-        });
+        })
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.body).toHaveProperty('placeId');
     });
 
+    testAuthHeader(() => request.put(`${url}/1`));
   });
 
   describe('DELETE /api/transactions/:id', () => {
 
     beforeAll(async () => {
       await prisma.place.createMany({ data: data.places });
-      await prisma.user.createMany({ data: data.users });
       await prisma.transaction.create({ data: data.transactions[0]! });
     });
 
@@ -426,21 +407,19 @@ describe('Transactions', () => {
       await prisma.place.deleteMany({
         where: { id: { in: dataToDelete.places } },
       });
-
-      await prisma.user.deleteMany({
-        where: { id: { in: dataToDelete.users } },
-      });
     });
 
     it('should 204 and return nothing', async () => {
-      const response = await request.delete(`${url}/1`);
+      const response = await request.delete(`${url}/1`)
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toEqual({});
     });
 
     it('should 404 with not existing place', async () => {
-      const response = await request.delete(`${url}/4`);
+      const response = await request.delete(`${url}/4`)
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
@@ -451,11 +430,14 @@ describe('Transactions', () => {
     });
 
     it('should 400 with invalid transaction id', async () => {
-      const response = await request.get(`${url}/invalid`);
+      const response = await request.get(`${url}/invalid`)
+        .set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.code).toBe('VALIDATION_FAILED');
       expect(response.body.details.params).toHaveProperty('id');
     });
+
+    testAuthHeader(() => request.delete(`${url}/1`));
   });
 });
