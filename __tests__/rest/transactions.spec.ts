@@ -1,7 +1,7 @@
 import type supertest from 'supertest';
 import { prisma } from '../../src/data';
 import withServer from '../helpers/withServer';
-import { login } from '../helpers/login';
+import { login, loginAdmin } from '../helpers/login';
 import testAuthHeader from '../helpers/testAuthHeader';
 
 const data = {
@@ -15,7 +15,7 @@ const data = {
     },
     {
       id: 2,
-      user_id: 1,
+      user_id: 2,
       place_id: 1,
       amount: -220,
       date: new Date(2021, 4, 8, 20, 0),
@@ -46,11 +46,13 @@ describe('Transactions', () => {
 
   let request: supertest.Agent;
   let authHeader: string;
+  let adminAuthHeader: string;
 
   withServer((r) => (request = r));
 
   beforeAll(async () => {
     authHeader = await login(request);
+    adminAuthHeader = await loginAdmin(request);
   });
 
   const url = '/api/transactions';
@@ -70,17 +72,71 @@ describe('Transactions', () => {
       });
     });
 
-    it('should 200 and return all transactions', async () => {
+    it('should 200 and return all transactions for the signed in user', async () => {
       const response = await request.get(url).set('Authorization', authHeader);
       expect(response.status).toBe(200);
 
+      expect(response.body.items.length).toBe(2);
       expect(response.body.items).toEqual(
         expect.arrayContaining([
           {
-            id: 2,
+            id: 1,
             user: {
               id: 1,
               name: 'Test User',
+            },
+            place: {
+              id: 1,
+              name: 'Test place',
+              rating: 3,
+            },
+            amount: 3500,
+            date: new Date(2021, 4, 25, 19, 40).toJSON(),
+          },
+          {
+            id: 3,
+            user: {
+              id: 1,
+              name: 'Test User',
+            },
+            place: {
+              id: 1,
+              name: 'Test place',
+              rating: 3,
+            },
+            amount: -74,
+            date: new Date(2021, 4, 21, 14, 30).toJSON(),
+          },
+        ]),
+      );
+    });
+
+    it('should 200 and return all transactions for the signed in user', async () => {
+      const response = await request.get(url).set('Authorization', adminAuthHeader);
+      expect(response.status).toBe(200);
+
+      expect(response.body.items.length).toBe(3);
+      expect(response.body.items).toEqual(
+        expect.arrayContaining([
+          {
+            id: 1,
+            user: {
+              id: 1,
+              name: 'Test User',
+            },
+            place: {
+              id: 1,
+              name: 'Test place',
+              rating: 3,
+            },
+            amount: 3500,
+            date: new Date(2021, 4, 25, 19, 40).toJSON(),
+          },
+          {
+            id: 2,
+            user: {
+              id: 2,
+              name: 'Admin User',
             },
             place: {
               id: 1,
@@ -158,6 +214,17 @@ describe('Transactions', () => {
 
     it('should 404 when requesting not existing transaction', async () => {
       const response = await request.get(`${url}/200`).set('Authorization', authHeader);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'No transaction with this id exists',
+      });
+      expect(response.body.stack).toBeTruthy();
+    });
+
+    it('should 404 when requesting not owned transaction', async () => {
+      const response = await request.get(`${url}/2`).set('Authorization', authHeader);
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toMatchObject({
