@@ -18,6 +18,29 @@ import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
 import Role from '../core/roles';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       allOf:
+ *         - $ref: "#/components/schemas/Base"
+ *         - type: object
+ *           required:
+ *             - name
+ *             - email
+ *           properties:
+ *             name:
+ *               type: "string"
+ *             email:
+ *               type: "string"
+ *               format: email
+ *           example:
+ *             id: 123
+ *             name: "Thomas Aelbecht"
+ *             email: "thomas.aelbrecht@hogent.be"
+ */
+
 const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
   const { userId, roles } = ctx.state.session;
   const { id } = ctx.params;

@@ -15,6 +15,43 @@ import type { IdParams } from '../types/common';
 import validate from '../core/validation';
 import { requireAuthentication } from '../core/auth';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Transaction:
+ *       allOf:
+ *         - $ref: "#/components/schemas/Base"
+ *         - type: object
+ *           required:
+ *             - amount
+ *             - date
+ *             - user
+ *             - place
+ *           properties:
+ *             name:
+ *               type: "string"
+ *             date:
+ *               type: "string"
+ *               format: date-time
+ *             place:
+ *               $ref: "#/components/schemas/Place"
+ *             user:
+ *               $ref: "#/components/schemas/User"
+ *           example:
+ *             id: 123
+ *             amount: 3000
+ *             date: "2021-05-28T14:27:32.534Z"
+ *             place:
+ *               id: 123
+ *               name: Loon
+ *               rating: 4
+ *             user:
+ *               id: 123
+ *               name: "Thomas Aelbecht"
+ *               email: "thomas.aelbrecht@hogent.be"
+ */
+
 const getAllTransactions = async (ctx: KoaContext<GetAllTransactionsReponse>) => {
   ctx.body = {
     items: await transactionService.getAll(

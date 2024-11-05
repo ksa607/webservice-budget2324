@@ -55,6 +55,33 @@ import { requireAuthentication } from '../core/auth';
  *           type: array
  *           items:
  *             $ref: "#/components/schemas/Place"
+ *     PlaceDetail:
+ *       allOf:
+ *         - $ref: "#/components/schemas/Place"
+ *         - type: object
+ *           required:
+ *             - transactions
+ *           properties:
+ *             transactions:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Transaction"
+ *           example:
+ *             id: 123
+ *             name: Loon
+ *             rating: 4
+ *             transactions:
+ *               - id: 123
+ *                 amount: 3000
+ *                 date: "2021-05-28T14:27:32.534Z"
+ *                 place:
+ *                   id: 123
+ *                   name: Loon
+ *                   rating: 4
+ *                 user:
+ *                   id: 123
+ *                   name: "Thomas Aelbecht"
+ *                   email: "thomas.aelbrecht@hogent.be"
  *
  *   requestBodies:
  *     Place:
@@ -104,6 +131,31 @@ const getAllPlaces = async (ctx: KoaContext<GetAllPlacesResponse>) => {
 };
 getAllPlaces.validationScheme = null;
 
+/**
+ * @swagger
+ * /api/places/{id}:
+ *   get:
+ *     summary: Get a single place
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: "#/components/parameters/idParam"
+ *     responses:
+ *       200:
+ *         description: The requested place
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/PlaceDetail"
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/404NotFound'
+ */
 const getPlaceById = async (ctx: KoaContext<GetPlaceByIdResponse, IdParams>) => {
   const place = await placeService.getById(ctx.params.id);
   ctx.body = place;
