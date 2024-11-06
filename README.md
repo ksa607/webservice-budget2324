@@ -40,3 +40,6 @@ This server will create the given database when the server is started.
 - Run the tests: `yarn test`
   - This will start a new server for each test suite that runs, you won't see any output as logging is disabled to make output more clean.
   - The user suite will take 'long' (around 6s) to complete, this is normal as many cryptographic operations are being performed.
+- Run the tests with coverage: `yarn test:coverage`
+  - This will generate a coverage report in the `__tests__/coverage` folder.
+  - Open `__tests__/coverage/lcov-report/index.html` in your browser to see the coverage report.
