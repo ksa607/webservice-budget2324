@@ -9,6 +9,9 @@ import type {
   BudgetAppContext,
   BudgetAppState,
 } from './types/koa';
+import config from 'config'; // 👈
+
+const PORT = config.get<number>('port'); 
 
 export interface Server {
   getApp(): KoaApplication;
@@ -30,8 +33,8 @@ export default async function createServer(): Promise<Server> {
 
     start() {
       return new Promise<void>((resolve) => {
-        app.listen(9000, () => {
-          getLogger().info('🚀 Server listening on http://localhost:9000');
+        app.listen(PORT, () => {
+          getLogger().info(`🚀 Server listening on http://localhost:${PORT}`);
           resolve();
         });
       });
