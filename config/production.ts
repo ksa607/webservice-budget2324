@@ -1,4 +1,7 @@
 export default {
+  cors: {
+    origins: ['https://frontend-budget-2425.onrender.com'],
+  },
   auth: {
 
     jwt: {
